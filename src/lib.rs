@@ -1,20 +1,9 @@
-//! RevGame - Bevy game client for RevBackend
-//!
-//! This crate provides a game client that integrates with the RevBackend
-//! game server for authentication, session management, and matchmaking.
-
-pub mod api;
+//! RevGame - Bevy game client
 
 #[cfg(feature = "graphics")]
 pub mod game;
-#[cfg(feature = "graphics")]
-pub mod plugins;
 #[cfg(feature = "scripting")]
 pub mod scripting;
 
-pub use api::ApiClient;
-
 #[cfg(feature = "graphics")]
-pub use game::{ConnectionStatus, CurrentPlayer, GameState};
-#[cfg(feature = "graphics")]
-pub use plugins::{ApiClientResource, ApiPlugin};
+pub use game::GameState;

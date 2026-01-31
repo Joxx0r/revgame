@@ -2,12 +2,12 @@
 name = "revgame"
 version = "0.1.0"
 edition = "2021"
-description = "Bevy game client for RevBackend"
+description = "Bevy game client"
 license = "MIT"
 
 [features]
 default = []
-# Full graphics support (requires system libs: alsa, wayland, x11, openssl)
+# Full graphics support (requires system libs: alsa, wayland, x11)
 graphics = ["dep:bevy", "scripting"]
 # Lua scripting with hot reload
 scripting = ["dep:mlua", "dep:notify", "dep:notify-debouncer-mini"]
@@ -15,22 +15,13 @@ scripting = ["dep:mlua", "dep:notify", "dep:notify-debouncer-mini"]
 [dependencies]
 # Bevy - optional, only for graphics builds
 bevy = { version = "0.15", optional = true }
-# HTTP client with pure Rust TLS (no openssl)
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-thiserror = "2.0"
-uuid = { version = "1.0", features = ["serde", "v4"] }
 # Lua scripting
 mlua = { version = "0.10", features = ["lua54", "vendored", "serialize", "send"], optional = true }
 notify = { version = "7.0", optional = true }
 notify-debouncer-mini = { version = "0.5", optional = true }
 
-[dev-dependencies]
-tokio-test = "0.4"
-
-# For headless API testing
 [[bin]]
 name = "revgame"
 required-features = ["graphics"]

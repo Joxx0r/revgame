@@ -3,7 +3,7 @@ use bevy::render::{
     settings::{Backends, RenderCreation, WgpuSettings},
     RenderPlugin,
 };
-use revgame::{game, plugins::ApiPlugin, GameState};
+use revgame::{game, GameState};
 
 #[cfg(feature = "scripting")]
 use revgame::scripting::check_script_changes;
@@ -31,18 +31,8 @@ fn main() {
     )
     // Initialize game state
     .init_state::<GameState>()
-    // Add API plugin
-    .add_plugins(ApiPlugin::default())
     // Setup systems
-    .add_systems(OnEnter(GameState::Loading), setup)
-    .add_systems(
-        Update,
-        (
-            game::display_connection_status,
-            game::display_player_info,
-        ),
-    )
-    .add_systems(OnEnter(GameState::MainMenu), on_main_menu);
+    .add_systems(OnEnter(GameState::Loading), setup);
 
     // Use Lua scripting if enabled, otherwise use Rust systems
     #[cfg(feature = "scripting")]
@@ -97,15 +87,11 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, mut next_state: ResMut<NextState<GameState>>) {
     // Spawn a 2D camera
     commands.spawn(Camera2d);
-    info!("RevGame started - Loading...");
-}
-
-fn on_main_menu(mut next_state: ResMut<NextState<GameState>>) {
-    info!("Entered Main Menu - Starting game...");
-    // For testing: immediately transition to InGame
+    info!("RevGame started");
+    // Go straight to game
     next_state.set(GameState::InGame);
 }
 
