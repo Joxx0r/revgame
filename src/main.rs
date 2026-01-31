@@ -5,42 +5,76 @@ use bevy::render::{
 };
 use revgame::{game, plugins::ApiPlugin, GameState};
 
+#[cfg(feature = "scripting")]
+use revgame::scripting::check_script_changes;
+
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "RevGame".to_string(),
-                        resolution: (1280.0, 720.0).into(),
-                        ..default()
-                    }),
-                    ..default()
-                })
-                .set(RenderPlugin {
-                    render_creation: RenderCreation::Automatic(WgpuSettings {
-                        backends: Some(platform_backends()),
-                        ..default()
-                    }),
+    let mut app = App::new();
+
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "RevGame".to_string(),
+                    resolution: (1280.0, 720.0).into(),
                     ..default()
                 }),
-        )
-        // Initialize game state
-        .init_state::<GameState>()
-        // Add API plugin
-        .add_plugins(ApiPlugin::default())
-        // Setup systems
-        .add_systems(OnEnter(GameState::Loading), setup)
-        .add_systems(
-            Update,
-            (
-                game::display_connection_status,
-                game::display_player_info,
-            ),
-        )
-        .add_systems(OnEnter(GameState::MainMenu), on_main_menu)
-        // InGame systems
-        .add_systems(
+                ..default()
+            })
+            .set(RenderPlugin {
+                render_creation: RenderCreation::Automatic(WgpuSettings {
+                    backends: Some(platform_backends()),
+                    ..default()
+                }),
+                ..default()
+            }),
+    )
+    // Initialize game state
+    .init_state::<GameState>()
+    // Add API plugin
+    .add_plugins(ApiPlugin::default())
+    // Setup systems
+    .add_systems(OnEnter(GameState::Loading), setup)
+    .add_systems(
+        Update,
+        (
+            game::display_connection_status,
+            game::display_player_info,
+        ),
+    )
+    .add_systems(OnEnter(GameState::MainMenu), on_main_menu);
+
+    // Use Lua scripting if enabled, otherwise use Rust systems
+    #[cfg(feature = "scripting")]
+    {
+        app.add_systems(Startup, game::init_lua_scripting)
+            .add_systems(
+                OnEnter(GameState::InGame),
+                (game::lua_spawn_world, game::lua_spawn_player),
+            )
+            .add_systems(
+                Update,
+                (
+                    check_script_changes,
+                    game::lua_update_time,
+                    game::lua_update_input,
+                    game::lua_sync_positions,
+                    game::lua_update_player,
+                    game::lua_update_camera,
+                    game::lua_process_commands,
+                )
+                    .chain()
+                    .run_if(in_state(GameState::InGame)),
+            )
+            .add_systems(
+                OnExit(GameState::InGame),
+                (game::despawn_world, game::despawn_player),
+            );
+    }
+
+    #[cfg(not(feature = "scripting"))]
+    {
+        app.add_systems(
             OnEnter(GameState::InGame),
             (game::spawn_world, game::spawn_player),
         )
@@ -57,8 +91,10 @@ fn main() {
         .add_systems(
             OnExit(GameState::InGame),
             (game::despawn_world, game::despawn_player),
-        )
-        .run();
+        );
+    }
+
+    app.run();
 }
 
 fn setup(mut commands: Commands) {

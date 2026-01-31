@@ -8,7 +8,9 @@ license = "MIT"
 [features]
 default = []
 # Full graphics support (requires system libs: alsa, wayland, x11, openssl)
-graphics = ["dep:bevy"]
+graphics = ["dep:bevy", "scripting"]
+# Lua scripting with hot reload
+scripting = ["dep:mlua", "dep:notify", "dep:notify-debouncer-mini"]
 
 [dependencies]
 # Bevy - optional, only for graphics builds
@@ -20,6 +22,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
 uuid = { version = "1.0", features = ["serde", "v4"] }
+# Lua scripting
+mlua = { version = "0.10", features = ["lua54", "vendored", "serialize", "send"], optional = true }
+notify = { version = "7.0", optional = true }
+notify-debouncer-mini = { version = "0.5", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"

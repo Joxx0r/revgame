@@ -9,6 +9,8 @@ pub mod api;
 pub mod game;
 #[cfg(feature = "graphics")]
 pub mod plugins;
+#[cfg(feature = "scripting")]
+pub mod scripting;
 
 pub use api::ApiClient;
 
