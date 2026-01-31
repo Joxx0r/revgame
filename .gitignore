@@ -2,10 +2,14 @@
 Cargo.lock
 .env
 
-# Beads local database files
+# Beads local database and runtime files
 .beads/beads.db
 .beads/beads.db-shm
 .beads/beads.db-wal
 .beads/.local_version
 .beads/last-touched
 .beads/metadata.json
+.beads/daemon.lock
+.beads/daemon.log
+.beads/daemon.pid
+.beads/issues.jsonl

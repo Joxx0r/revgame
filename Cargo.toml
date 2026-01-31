@@ -5,17 +5,29 @@ edition = "2021"
 description = "Bevy game client for RevBackend"
 license = "MIT"
 
+[features]
+default = []
+# Full graphics support (requires system libs: alsa, wayland, x11, openssl)
+graphics = ["dep:bevy"]
+
 [dependencies]
-bevy = "0.15"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+# Bevy - optional, only for graphics builds
+bevy = { version = "0.15", optional = true }
+# HTTP client with pure Rust TLS (no openssl)
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
-uuid = { version = "1.0", features = ["serde"] }
+uuid = { version = "1.0", features = ["serde", "v4"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
+
+# For headless API testing
+[[bin]]
+name = "revgame"
+required-features = ["graphics"]
 
 # Fast compile config for Bevy
 [profile.dev]

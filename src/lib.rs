@@ -4,9 +4,15 @@
 //! game server for authentication, session management, and matchmaking.
 
 pub mod api;
+
+#[cfg(feature = "graphics")]
 pub mod game;
+#[cfg(feature = "graphics")]
 pub mod plugins;
 
 pub use api::ApiClient;
+
+#[cfg(feature = "graphics")]
 pub use game::{ConnectionStatus, CurrentPlayer, GameState};
+#[cfg(feature = "graphics")]
 pub use plugins::{ApiClientResource, ApiPlugin};
