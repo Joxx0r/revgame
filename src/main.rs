@@ -73,6 +73,7 @@ fn main() {
             Update,
             (
                 game::player_input,
+                game::stamina_system,
                 game::player_movement,
                 game::camera_follow,
             )
