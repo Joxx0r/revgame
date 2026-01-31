@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/jo/gt/revgame && cargo fmt 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

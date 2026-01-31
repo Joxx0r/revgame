@@ -1,0 +1,11 @@
+{
+  "type": "rig",
+  "version": 1,
+  "name": "revgame",
+  "git_url": "https://github.com/Joxx0r/revgame.git",
+  "default_branch": "main",
+  "created_at": "2026-01-31T21:45:00.000000000+01:00",
+  "beads": {
+    "prefix": "rg"
+  }
+}

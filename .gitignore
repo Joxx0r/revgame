@@ -1,0 +1,11 @@
+/target
+Cargo.lock
+.env
+
+# Beads local database files
+.beads/beads.db
+.beads/beads.db-shm
+.beads/beads.db-wal
+.beads/.local_version
+.beads/last-touched
+.beads/metadata.json

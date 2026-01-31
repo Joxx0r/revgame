@@ -1,0 +1,25 @@
+[package]
+name = "revgame"
+version = "0.1.0"
+edition = "2021"
+description = "Bevy game client for RevBackend"
+license = "MIT"
+
+[dependencies]
+bevy = "0.15"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+uuid = { version = "1.0", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+# Fast compile config for Bevy
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
