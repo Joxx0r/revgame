@@ -4,7 +4,8 @@
 Player = {
     speed = 200,
     size = 50,
-    color = { r = 0.204, g = 0.596, b = 0.859 }  -- #3498db blue
+    color = { r = 0.204, g = 0.596, b = 0.859 },  -- #3498db blue
+    max_health = 100
 }
 
 -- Spawns the player entity
@@ -18,6 +19,7 @@ function spawn_player()
     )
     mark_as_player(id)
     mark_as_camera_target(id)
+    set_health(id, Player.max_health)
     log("Player spawned with ID: " .. tostring(id))
     return id
 end

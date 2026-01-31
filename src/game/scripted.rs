@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::path::PathBuf;
 
-use crate::game::{CameraTarget, MoveSpeed, Player, Velocity, WorldElement};
+use crate::game::{CameraTarget, Health, MoveSpeed, Player, Velocity, WorldElement};
 use crate::scripting::{init_script_watcher, setup_lua_bindings, LuaGameState, LuaRuntime};
 
 /// Resource to track the player entity spawned by Lua
@@ -33,7 +33,7 @@ pub fn init_lua_scripting(mut commands: Commands) {
 
     // Load initial scripts
     let scripts_dir = PathBuf::from("scripts");
-    for script in &["world", "player", "camera"] {
+    for script in &["world", "player", "camera", "healthbar"] {
         let path = scripts_dir.join(format!("{}.lua", script));
         if path.exists() {
             if let Err(e) = runtime.load_script(script, &path) {
@@ -121,6 +121,7 @@ pub fn lua_sync_positions(
     game_state: Option<Res<LuaGameState>>,
     player_entity: Option<Res<LuaPlayerEntity>>,
     transforms: Query<&Transform>,
+    health_query: Query<&Health>,
     camera_query: Query<&Transform, With<Camera2d>>,
 ) {
     let Some(game_state) = game_state else { return };
@@ -128,11 +129,14 @@ pub fn lua_sync_positions(
         return;
     };
 
-    // Sync player position
+    // Sync player position and health
     if let Some((lua_id, entity)) = player_entity.0 {
         if entity != Entity::PLACEHOLDER {
             if let Ok(transform) = transforms.get(entity) {
                 game_state.update_entity_position(lua_id, transform.translation.x, transform.translation.y);
+            }
+            if let Ok(health) = health_query.get(entity) {
+                game_state.update_entity_health(lua_id, health.current, health.max);
             }
         }
     }
@@ -187,6 +191,8 @@ pub fn lua_process_commands(
     mut player_entity: Option<ResMut<LuaPlayerEntity>>,
     mut transforms: Query<&mut Transform, Without<Camera2d>>,
     mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
+    mut health_query: Query<&mut Health>,
+    mut sprites: Query<&mut Sprite>,
 ) {
     let Some(game_state) = game_state else { return };
 
@@ -223,6 +229,7 @@ pub fn lua_process_commands(
                 Player,
                 Velocity::default(),
                 MoveSpeed::default(),
+                Health::default(),
             ));
         }
     }
@@ -254,6 +261,41 @@ pub fn lua_process_commands(
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
             camera_transform.translation.x = x;
             camera_transform.translation.y = y;
+        }
+    }
+
+    // Process health updates
+    for (lua_id, new_health) in game_state.take_health_updates() {
+        if let Some(entity) = game_state.get_entity(lua_id) {
+            if let Ok(mut health) = health_query.get_mut(entity) {
+                health.current = new_health.clamp(0.0, health.max);
+            }
+        }
+    }
+
+    // Process sprite size updates
+    for (lua_id, w, h) in game_state.take_size_updates() {
+        if let Some(entity) = game_state.get_entity(lua_id) {
+            if let Ok(mut sprite) = sprites.get_mut(entity) {
+                sprite.custom_size = Some(Vec2::new(w, h));
+            }
+        }
+    }
+}
+
+/// Call Lua healthbar update
+pub fn lua_update_healthbar(
+    runtime: Option<Res<LuaRuntime>>,
+    player_entity: Option<Res<LuaPlayerEntity>>,
+) {
+    let Some(runtime) = runtime else { return };
+    let Some(player_entity) = player_entity else {
+        return;
+    };
+
+    if let Some((lua_id, entity)) = player_entity.0 {
+        if entity != Entity::PLACEHOLDER {
+            let _ = (*runtime).call_update_function("update_healthbar", lua_id, 0.0);
         }
     }
 }

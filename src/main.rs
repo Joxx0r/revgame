@@ -50,6 +50,7 @@ fn main() {
                     game::lua_update_input,
                     game::lua_sync_positions,
                     game::lua_update_player,
+                    game::lua_update_healthbar,
                     game::lua_update_camera,
                     game::lua_process_commands,
                 )

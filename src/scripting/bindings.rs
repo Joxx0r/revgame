@@ -35,6 +35,12 @@ struct LuaGameStateInner {
     entity_positions: std::collections::HashMap<u32, (f32, f32)>,
     /// Camera position (for reading)
     current_camera_pos: (f32, f32),
+    /// Health updates from Lua (entity_id, new_current_health)
+    health_updates: Vec<(u32, f32)>,
+    /// Entity health values synced from Bevy (lua_id -> (current, max))
+    entity_health: std::collections::HashMap<u32, (f32, f32)>,
+    /// Sprite size updates from Lua (entity_id, width, height)
+    size_updates: Vec<(u32, f32, f32)>,
 }
 
 #[derive(Clone)]
@@ -65,6 +71,9 @@ impl LuaGameState {
                 keys_pressed: std::collections::HashSet::new(),
                 entity_positions: std::collections::HashMap::new(),
                 current_camera_pos: (0.0, 0.0),
+                health_updates: Vec::new(),
+                entity_health: std::collections::HashMap::new(),
+                size_updates: Vec::new(),
             })),
         }
     }
@@ -132,6 +141,22 @@ impl LuaGameState {
 
     pub fn take_mark_world_element(&self) -> Vec<u32> {
         std::mem::take(&mut self.inner.write().unwrap().mark_world_element)
+    }
+
+    pub fn update_entity_health(&self, lua_id: u32, current: f32, max: f32) {
+        self.inner
+            .write()
+            .unwrap()
+            .entity_health
+            .insert(lua_id, (current, max));
+    }
+
+    pub fn take_health_updates(&self) -> Vec<(u32, f32)> {
+        std::mem::take(&mut self.inner.write().unwrap().health_updates)
+    }
+
+    pub fn take_size_updates(&self) -> Vec<(u32, f32, f32)> {
+        std::mem::take(&mut self.inner.write().unwrap().size_updates)
     }
 }
 
@@ -256,6 +281,37 @@ pub fn setup_lua_bindings(lua: &Lua, game_state: LuaGameState) -> LuaResult<()> 
         "mark_as_world_element",
         lua.create_function(move |_, entity_id: u32| {
             gs.inner.write().unwrap().mark_world_element.push(entity_id);
+            Ok(())
+        })?,
+    )?;
+
+    let gs = game_state.clone();
+    globals.set(
+        "set_health",
+        lua.create_function(move |_, (entity_id, health): (u32, f32)| {
+            gs.inner.write().unwrap().health_updates.push((entity_id, health));
+            Ok(())
+        })?,
+    )?;
+
+    let gs = game_state.clone();
+    globals.set(
+        "get_health",
+        lua.create_function(move |_, entity_id: u32| {
+            let inner = gs.inner.read().unwrap();
+            if let Some((current, max)) = inner.entity_health.get(&entity_id) {
+                Ok((*current, *max))
+            } else {
+                Ok((0.0, 0.0))
+            }
+        })?,
+    )?;
+
+    let gs = game_state.clone();
+    globals.set(
+        "set_sprite_size",
+        lua.create_function(move |_, (entity_id, w, h): (u32, f32, f32)| {
+            gs.inner.write().unwrap().size_updates.push((entity_id, w, h));
             Ok(())
         })?,
     )?;
