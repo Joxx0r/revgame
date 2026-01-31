@@ -185,7 +185,7 @@ pub fn lua_process_commands(
     mut commands: Commands,
     game_state: Option<Res<LuaGameState>>,
     mut player_entity: Option<ResMut<LuaPlayerEntity>>,
-    mut transforms: Query<&mut Transform>,
+    mut transforms: Query<&mut Transform, Without<Camera2d>>,
     mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
 ) {
     let Some(game_state) = game_state else { return };
