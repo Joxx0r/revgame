@@ -67,3 +67,39 @@ impl Default for Stamina {
         }
     }
 }
+
+/// State machine for the orbiter AI agent
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum AgentState {
+    /// Orbiting around the player at a fixed radius
+    Circling,
+    /// Moving toward the player to interact
+    Approaching,
+    /// At the player, performing an interaction (bump)
+    Interacting,
+    /// Returning from player back to orbit radius
+    Returning,
+}
+
+/// AI agent that orbits around the player
+#[derive(Component)]
+pub struct OrbiterAgent {
+    /// Current behavior state
+    pub state: AgentState,
+    /// Orbit radius in pixels
+    pub orbit_radius: f32,
+    /// Angular speed in radians per second
+    pub orbit_speed: f32,
+    /// Current angle on the orbit circle (radians)
+    pub angle: f32,
+    /// Movement speed when approaching/returning (pixels per second)
+    pub move_speed: f32,
+    /// Timer for interaction duration
+    pub interact_timer: f32,
+    /// Timer for how long to circle before next approach
+    pub circle_timer: f32,
+    /// Duration of interaction pause
+    pub interact_duration: f32,
+    /// Duration of circling before approaching
+    pub circle_duration: f32,
+}
