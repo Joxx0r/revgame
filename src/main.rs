@@ -67,7 +67,7 @@ fn main() {
     {
         app.add_systems(
             OnEnter(GameState::InGame),
-            (game::spawn_world, game::spawn_player),
+            (game::spawn_world, game::spawn_player, game::spawn_agent),
         )
         .add_systems(
             Update,
@@ -75,6 +75,7 @@ fn main() {
                 game::player_input,
                 game::stamina_system,
                 game::player_movement,
+                game::agent_behavior,
                 game::camera_follow,
             )
                 .chain()
@@ -82,7 +83,7 @@ fn main() {
         )
         .add_systems(
             OnExit(GameState::InGame),
-            (game::despawn_world, game::despawn_player),
+            (game::despawn_world, game::despawn_player, game::despawn_agents),
         );
     }
 
